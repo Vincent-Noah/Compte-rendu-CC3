@@ -1,0 +1,80 @@
+---
+title: Installation de tous les packages
+author: Vincent Noah
+date: "26 décembre 2020"
+output:
+  github_document:
+    toc: true
+    toc_depth: 2
+---
+
+# Mise à jour de la machine virtuelle. 
+
+``` {bash, results="hide"}
+sudo apt-get update -y 
+sudo apt-get install -y libbz2-dev
+sudo apt-get install -y liblzma-dev
+```
+
+
+# Installation de Dada2 et de Phyloseq avec BiocManager.
+
+A partir des instructions https://benjjneb.github.io/dada2/dada-installation.html
+
+## Installation de BiocManager.
+
+```{r package install, results="hide", message=FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install(version = '3.11')
+```
+
+## Installation de Dada2.
+
+```{r, results="hide", message=FALSE}
+BiocManager::install("dada2", version = "3.11")
+```
+
+## Installation de Phyloseq.
+
+```{r, results="hide", message=FALSE}
+BiocManager::install("phyloseq", version = "3.11")
+```
+
+
+# Installation de packages pour phyloseq.
+
+## Installation de phangorn.
+
+```{r, results="hide", message=FALSE}
+BiocManager::install("phangorn")
+```
+
+## Installation de DECIPHER.
+
+```{r, results="hide", message=FALSE}
+BiocManager::install("DECIPHER")
+```
+
+## Installation de gridExtra
+
+```{r, results="hide", message=FALSE}
+install.packages("gridExtra")
+```
+
+
+# Installation de packages pour des analyses complémentaires sur phyloseq.
+
+```{r, results="hide", message=FALSE, warning=FALSE}
+.cran_packages <- c( "shiny","miniUI", "caret", "pls", "e1071", "ggplot2", "randomForest", "dplyr", "ggrepel", "nlme", "devtools",
+                  "reshape2", "PMA", "structSSI", "ade4",
+                  "ggnetwork", "intergraph", "scales")
+.github_packages <- c("jfukuyama/phyloseqGraphTest")
+.bioc_packages <- c("genefilter", "impute")
+```
+
+```{r, results="hide", message=FALSE, warning=FALSE}
+install.packages(.cran_packages)
+devtools::install_github(.github_packages)
+BiocManager::install(.bioc_packages)                        
+```
