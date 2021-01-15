@@ -1,15 +1,14 @@
 ---
 title: Installation de tous les packages
 author: Vincent Noah
-date: "26 décembre 2020"
+date: "14 janvier 2021"
 output:
   github_document:
     toc: true
     toc_depth: 2
 ---
 
-# Mise à jour de la machine virtuelle. 
-
+# Mise à jour de la machine virtuelle.
 ``` {bash, results="hide"}
 sudo apt-get update -y 
 sudo apt-get install -y libbz2-dev
