@@ -1,0 +1,133 @@
+---
+title: "Analyse des donées avec Phyloseq"
+author: Vincent Noah
+date: "14 janvier 2021"
+output:
+  github_document:
+    toc: true
+    toc_depth: 2
+---
+
+
+Tout d'abord nous allons charger les packages nécessaires et charger l'image de l'analyse avec DADA2, afin de pouvoir continuer.
+ 
+```{r}
+library(phyloseq)
+library(ggplot2)
+```
+
+```{r}
+load("02_Data-analysis-with-DADA2_FinalEnv")
+```
+
+
+
+# Stratification des données en fonction de l'objet de l'étude.
+
+## Création de plusieurs objets. 
+
+Avec Logan, on a passé des heures à stratifier correctement nos données, mais nous n'avons pas réussi bien que nous soyons très proches de réussir. On a donc laissé ce code pour pouvoir continuer une analyse, bien que celui -ci ne soit pas exacte.
+
+```{r}
+samples.out <- rownames(seqtab.nochim)
+Frigo <- sapply(strsplit(samples.out, "F"), `[`, 2)
+Placard <- sapply(strsplit(samples.out, "P"), `[`, 2)
+
+samdf <- data.frame(frigo=Frigo , placard=Placard)
+
+
+rownames(samdf) <- samples.out
+```
+
+# Création de l'objet ps.
+
+```{r}
+ps <- phyloseq(otu_table(seqtab.nochim, taxa_are_rows=FALSE), 
+               sample_data(samdf), 
+               tax_table(taxa))
+ps <- prune_samples(sample_names(ps) != "Mock", ps) # Remove mock sample
+
+```
+
+# Assignation des données avec dna grâce au package Biostrings pour manipuler les données biologiques.
+
+
+```{r}
+dna <- Biostrings::DNAStringSet(taxa_names(ps))
+names(dna) <- taxa_names(ps)
+ps <- merge_phyloseq(ps, dna)
+taxa_names(ps) <- paste0("ASV", seq(ntaxa(ps)))
+ps
+```
+
+# Création de la table.
+
+On observe qu'il y a de nombreuses protéobactéries, actinobactérie, et firmicute. Cela semble logique car ces bactéries sont très abondantes, et les objets de l'étude se trouvent sur des surfaces que l'on touche souvent.
+
+
+```{r}
+table(tax_table(ps)[, "Phylum"], exclude = NULL)
+
+```
+
+
+```{r}
+prevdf = apply(X = otu_table(ps),
+               MARGIN = ifelse(taxa_are_rows(ps), yes = 1, no = 2),
+               FUN = function(x){sum(x > 0)})
+# Add taxonomy and total read counts to this data.frame
+prevdf = data.frame(Prevalence = prevdf,
+                    TotalAbundance = taxa_sums(ps),
+                    tax_table(ps))
+
+
+plyr::ddply(prevdf, "Phylum", function(df1){cbind(mean(df1$Prevalence),sum(df1$Prevalence))})
+```
+
+# Visualisation de la prévalence
+
+Ce graphique nous permet de confirmer cette prévalence. On observe que ce sont seulement certain phyla qui sont très présent.
+
+```{r}
+prevdf1 = subset(prevdf, Phylum %in% get_taxa_unique(ps, "Phylum"))
+ggplot(prevdf1, aes(TotalAbundance, Prevalence / nsamples(ps),color=Phylum)) +
+  # Include a guess for parameter
+  geom_hline(yintercept = 0.05, alpha = 0.5, linetype = 2) +  geom_point(size = 2, alpha = 0.7) +
+  scale_x_log10() +  xlab("Total Abundance") + ylab("Prevalence [Frac. Samples]") +
+  facet_wrap(~Phylum) + theme(legend.position="none")
+```
+
+
+
+
+
+## Visualisation en Bar plot
+
+```{r}
+top20 <- names(sort(taxa_sums(ps), decreasing=TRUE))[1:20]
+ps.top20 <- transform_sample_counts(ps, function(OTU) OTU/sum(OTU))
+ps.top20 <- prune_taxa(top20, ps.top20)
+plot_bar(ps.top20, x="Frigo", fill="Family") + facet_wrap(~Placard, scales="free_x")
+
+```
+
+```{r}
+top20 <- names(sort(taxa_sums(ps), decreasing=TRUE))[1:20]
+ps.top20 <- transform_sample_counts(ps, function(OTU) OTU/sum(OTU))
+ps.top20 <- prune_taxa(top20, ps.top20)
+plot_bar(ps.top20, x="Frigo", fill="Family")
+```
+
+```{r}
+top20 <- names(sort(taxa_sums(ps), decreasing=TRUE))[1:20]
+ps.top20 <- transform_sample_counts(ps, function(OTU) OTU/sum(OTU))
+ps.top20 <- prune_taxa(top20, ps.top20)
+plot_bar(ps.top20, x="Placard", fill="Family") 
+```
+
+
+Quand on observe tous ces graphiques, on remarque que l'abondance des bactéries est variable d'un placard à l'autre, d'un frigo à l'autre, cependant, on peut observer certaines similarités. C'est par exemple ce que l'on observe avec les Streptocoques. Tout comme logan, il y a la présence de staphylocoques. Les staphylocoques tout comme les Streptocoques, peuvent être pathogènes, bien que l'on retrouve ces bactéries naturellement sur la peau en grande quantité. Contrairement à Logan, il n'y a pas la présence d'entérobactéries. Ces bactéries sont des marqueurs de contamination. Cette étude peut donc permettre de faire prendre conscience en bien comme en mal de l'omniprésence des bactéries sur de nombreuses surfaces que l'on utilise régulièrement.
+
+Malheureusement, comme nous n'avions pas pu séparer correctement nos données, on n'a pas pu réaliser une analyse très détaillée de la présence des bactéries dans les cuisines. On aurait pu observer la différence que l'on retrouve entre les frigos et les placards, mais aussi, s'il y a de grandes différences entre les cuisines.
+
+

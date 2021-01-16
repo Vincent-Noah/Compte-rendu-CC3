@@ -1,0 +1,153 @@
+---
+title: "Analyse des donées avec Dada2"
+author: Vincent Noah
+date: "14 janvier 2021"
+output:
+  github_document:
+    toc: true
+    toc_depth: 2
+---
+
+Cette étude est complémentaire avec celle de Logan. Nous avons pris des placards et des frigos différents pour observer ou non s'il y à un changement de diversité.
+
+# Préparation de l'environnement.
+
+
+```{r}
+library(Rcpp)
+library(dada2)
+```
+
+Les données contenues dans le dossier Data sont des séquences d'ARN 16s obtenu à partir d'échantillon de 280 cuisines initialement. Cependant, les temps de chargement et de traitements étaient très longs, nous avons donc décidé de prendre 10 placards et 10 frigos différents.
+
+ 
+```{r}
+path <- "~/Compte-rendu-CC3/Compte-rendu-CC3/Data"
+list.files(path)
+```
+
+Les données étant traitées, nous ne pouvons pas savoir où sont les forwards et où sont les reverses. On parle donc FR pour forward/Reverse
+
+```{r}
+fnFRs <- sort(list.files(path, pattern=".gz", full.names = TRUE))
+sample.names <- sapply(strsplit(basename(fnFRs), ".fastq.gz"), `[`, 1)
+```
+
+
+# Inspecter les profils de qualité des lectures.
+
+Nous pouvons tout de même observer la qualité des reads et voir quelles sont de bonne qualité
+
+
+```{r}
+plotQualityProfile(fnFRs[1:4])
+```
+
+
+
+
+# Connaitre le taux d'erreur.
+
+
+```{r}
+errFR <- learnErrors(fnFRs, multithread=TRUE)
+```
+
+
+* La ligne noire montre le taux d'erreurs estimé avec learnErrors.
+
+
+
+* La ligne en rouge montre le taux d'erreur observé.
+
+
+
+* On observe qu'il y a peu de différence.
+
+```{r}
+plotErrors(errFR, nominalQ=TRUE)
+```
+
+# Inférence d'échantillon.
+
+Le package Dada2 contient un algorithme d'interférence, qui peut appliquer aux données que nous possédons. Cela nous permet d'enlever les bruits de fond, pour les R1 et les R2.
+
+```{r}
+dadaFRs <- dada(fnFRs, err=errFR, multithread=TRUE)
+```
+ 
+
+
+# Alignement des R1 et R2 en contigs.
+
+
+
+```{r}
+mergers <- dadaFRs
+```
+
+
+
+# Construction de la table d'observation.
+
+On va maintenant créer une table de séquences grâce à la fonction "makeSequenceTable" à partir des contigs obtenus et placé dans l'objet mergers.
+
+```{r,}
+seqtab <- makeSequenceTable(mergers)
+dim(seqtab)
+```
+
+
+# Détection de chimères.
+
+```{r}
+seqtab.nochim <- removeBimeraDenovo(seqtab, method="consensus", multithread=TRUE, verbose=TRUE)
+dim(seqtab.nochim)
+```
+
+# Pourcentage de séquences chimérique dans l'ensemble de la table.
+
+On peut déterminer le pourcentage du taux de chimères. On trouve qu'il y a 5 % de séquences chimérique dans notre jeu de donnée.
+
+```{r}
+1-sum(seqtab.nochim)/sum(seqtab)
+```
+
+
+# Téléchargement des bases de donées et assignation d'un taxonomique.
+
+```{bash, results="hide"}
+wget https://zenodo.org/record/3986799/files/silva_nr99_v138_train_set.fa.gz
+```
+
+```{r}
+taxa <- assignTaxonomy(seqtab.nochim, "~/silva_nr99_v138_train_set.fa.gz", multithread=TRUE)
+```
+
+```{bash, results="hide"}
+wget https://zenodo.org/record/3986799/files/silva_species_assignment_v138.fa.gz
+```
+
+```{r}
+taxa<- addSpecies(taxa, "~/silva_species_assignment_v138.fa.gz")
+```
+
+
+
+```{r}
+taxa.print <- taxa # Removing sequence rownames for display only
+rownames(taxa.print) <- NULL
+head(taxa.print)
+```
+
+
+
+
+Afin de pouvoir continuer notre analyse avec phyloseq, On va réaliser une sauvegarde, que l'on pourra charger avant l'analyse de phyloseq afin d'avoir toutes les données.
+
+```{r}
+save.image(file="02_Data-analysis-with-DADA2_FinalEnv")
+```
+
+
+Dada 2 nous a permis de préparer les données afin qu'ils puissent être analysés, le plus précisément avec Phyloseq. 
