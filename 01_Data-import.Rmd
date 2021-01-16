@@ -1,7 +1,7 @@
 ---
-title: "Importation des données "
+title: Installation de tous les packages
 author: Vincent Noah
-date: "26 décembre 2020"
+date: "14 janvier 2021"
 output:
   github_document:
     toc: true
@@ -9,3 +9,33 @@ output:
 ---
 
 
+# Téléchargement des données liées aux placards. 
+
+```{bash, results="hide"}
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR166/ERR166070/ERR166070.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR165/ERR165981/ERR165981.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR166/ERR166127/ERR166127.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR166/ERR166068/ERR166068.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR166/ERR166196/ERR166196.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR165/ERR165999/ERR165999.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR166/ERR166019/ERR166019.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR166/ERR166074/ERR166074.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR166/ERR166145/ERR166145.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR165/ERR165993/ERR165993.fastq.gz
+```
+
+# Téléchargement des données liées aux frigos. 
+
+```{bash, results="hide"}
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR166/ERR166003/ERR166003.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR165/ERR165946/ERR165946.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR166/ERR166184/ERR166184.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR166/ERR166194/ERR166194.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR166/ERR166071/ERR166071.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR166/ERR166084/ERR166084.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR166/ERR166082/ERR166082.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR166/ERR166103/ERR166103.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR166/ERR166076/ERR166076.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR166/ERR166199/ERR166199.fastq.gz
+wgetftp.sra.ebi.ac.uk/vol1/fastq/ERR166/ERR166171/ERR166171.fastq.gz
+```
