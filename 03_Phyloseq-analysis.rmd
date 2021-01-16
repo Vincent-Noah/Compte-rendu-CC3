@@ -30,12 +30,12 @@ Avec Logan, on a passé des heures à stratifier correctement nos données, mais
 
 ```{r}
 samples.out <- rownames(seqtab.nochim)
-Frigo <- sapply(strsplit(samples.out, "F"), `[`, 2)
-Placard <- sapply(strsplit(samples.out, "P"), `[`, 2)
-
-samdf <- data.frame(frigo=Frigo , placard=Placard)
-
-
+placard <- sapply(strsplit(samples.out, "p"), `[`, 2)
+frigo <- (sapply(strsplit(samples.out, "f"), `[`, 3))
+frigo <- substr(placard,1,10)
+samdf <- data.frame(Placard=placard, Frigo=frigo)
+samdf$Placard <- c("p1","p2","p3","p4","p5", "p6","p7","p8","p9","p10")
+samdf$Frigo[samdf$Placard==10] <- c("f1","f2","f3","f4","f5", "f6","f7","f8","f9","f10")
 rownames(samdf) <- samples.out
 ```
 
